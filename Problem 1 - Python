@@ -1,0 +1,248 @@
+import numpy as np
+import math
+import random
+import matplotlib.pyplot as plt
+
+def Func_obj1(x):
+    y = []
+    for i in x:
+        y.append(i*math.sin(10*math.pi*i)+1)
+    return y
+
+def Graph_exact(pop_x,pop_y,gen_number):
+    graph_x = np.arange(-1,2,0.001)
+    graph_y = Func_obj1(graph_x)
+            
+    graph1 = plt.plot(graph_x,graph_y)
+    
+    graph2 = plt.plot(pop_x,pop_y, marker = ".", linestyle="none")
+    
+    axis_x1 = plt.xlabel("x")
+    axis_y1 = plt.ylabel("Function: \n \n" + "x*sin(10*π*x)+1")
+
+    plt.title("Generation number: " + str(gen_number+1))
+
+    plt.margins(0.0)
+    plt.grid('ON',linestyle='--', alpha = 0.3)
+    
+    plt.show()
+    
+def Apt_ord(x_values,y_values):
+    pop_sort_y = sorted(y_values, reverse=True)
+
+    pop_sort_x = []
+
+    for item in pop_sort_y:
+        pop_sort_x.append(x_values[y_values.index(item)])
+        
+    apt_x = []
+    apt_x_acum = []
+    acum = 0
+
+    for i in range(1,size_pop+1):
+        value = 2*(size_pop-i)/(size_pop-1)
+        apt_x.append(value)
+        acum += value 
+        apt_x_acum.append(acum)
+        
+    return pop_sort_x, pop_sort_y, apt_x  # Adicionar t_x_acum #
+
+
+def Selection_torn(x_values, apt_values, number_contestant):
+    selected_torn = []
+    selected_torn_apt = []
+    
+    print("Start of tornament selection", "\n")
+
+    for i in range(0,size_pop):
+        itens = random.sample(range(0, size_pop), number_contestant)
+        print(itens)
+        print(apt_values[itens[0]],apt_values[itens[1]],apt_values[itens[2]])
+        max_apt = max(apt_values[itens[0]],apt_values[itens[1]],apt_values[itens[2]])
+        print(max_apt)
+        print(x_values[apt_values.index(max_apt)])
+        selected_torn.append(x_values[apt_values.index(max_apt)])
+        
+    return selected_torn
+
+    print("\n", "Selected by Tornament \n", selected_torn, "\n")
+    
+
+def Cross_BLX_alpha(inter_pop, alpha):
+    crossed_generation = []
+    
+    while len(crossed_generation) < len(inter_pop):
+        fathers = random.sample(range(0, len(inter_pop)), 2)
+        print(fathers)
+
+        cross_over_test = random.random()
+        print(cross_over_test)
+
+        father_1 = inter_pop[fathers[0]]
+        father_2 = inter_pop[fathers[1]]
+
+        if cross_over_test < crossover_tax:            
+            beta = np.random.uniform(-alpha, 1+alpha)
+            son = father_1 + beta*(father_2 - father_1)
+            
+            if minimum_value < son < maximum_value:
+                if son not in crossed_generation:
+                    crossed_generation.append(son)
+
+        else:
+            if father_1*math.sin(10*math.pi*father_1)+1 > father_2*math.sin(10*math.pi*father_2)+1:
+                if father_1 not in crossed_generation:
+                    crossed_generation.append(father_1)  # Non-repeated #
+                else:
+                    pass
+            else:
+                if father_2 not in crossed_generation:
+                    crossed_generation.append(father_2)   # Non-repeated #
+                else:
+                    pass
+                
+    return crossed_generation
+
+def Cross_Michalewicz_arit(inter_pop):
+    crossed_generation = []
+    
+    while len(crossed_generation) < len(inter_pop):
+        fathers = random.sample(range(0, len(inter_pop)), 2)
+        print(fathers)
+
+        cross_over_test = random.random()
+        print(cross_over_test)
+
+        father_1 = inter_pop[fathers[0]]
+        father_2 = inter_pop[fathers[1]]
+
+        beta = np.random.uniform(0,1) 
+        
+        son_1 = beta*father_1 + (1-beta)*father_2
+        son_2 = (1-beta)*father_1 + beta*father_2
+        
+        crossed_generation += [son_1,son_2]
+        
+    return crossed_generation
+
+def Muta_Michalewicz_gauss(crossed_generation, muta_tax, sigma):
+    muta_generation = []
+    next_generation_f = []
+    
+    for i in crossed_generation:
+        muta_test = random.random()
+        if muta_test < muta_tax:
+            muta_generation.append(np.random.normal(i,sigma))
+        else:
+            muta_generation.append(i)
+               
+    return muta_generation
+
+def Muta_Michalewicz_Non_Uniform(crossed_generation, G_index , G_max, b):
+    muta_generation = []
+    next_generation_f = []
+    
+    for cromossom in crossed_generation:
+        muta_test = random.random()
+        if muta_test < muta_tax:
+            r1 = np.random.uniform(0,1)
+            r2 = np.random.uniform(0,1)
+            f_G = (r2*(1-(G_index/G_max)))**b
+            
+            if r1 < 0.5:
+                muta_generation.append(cromossom + (maximum_value-cromossom)*f_G)
+            elif r1 >= 0.5:
+                muta_generation.append(cromossom - (cromossom - minimum_value)*f_G)
+            else:
+                muta_generation.append(cromossom)
+    
+    return muta_generation
+
+average_apt = []
+maximum_apt = []
+minimum_value = -1.0
+maximum_value = 2.0
+    
+
+number_gen = int(input("Enter the number of generations:  "))    
+size_pop = int(input("Enter the size of the population:  "))
+crossover_tax = float(input("Enter the tax for crossover (60%-90%): "))/100
+mutation_tax = float(input("Enter the tax for mutation: (0.5%-1%): "))/100
+number_elit = int(input("Enter the number of elit paraents in each generation: "))
+
+
+def Genetic_Alg(initial_pop, generations, cross_tax, mut_tax, elitism):
+    
+    first_pop_x = []
+
+    for i in range(size_pop):
+        first_pop_x.append(random.uniform(minimum_value,maximum_value))
+        
+    
+    current_pop = first_pop_x
+    
+    for i in range(generations):
+        
+        print("\n Start of generation number: ", i, "\n")
+                
+        current_pop_y = Func_obj1(current_pop)
+        
+        sorted_x, sorted_y, apt_x = Apt_ord(current_pop, current_pop_y)
+        
+        print("The current population is: \n", sorted_x)
+        print("The current population objective funciton is: \n", sorted_y)
+        print("The current population aptitude is: \n", apt_x)
+        
+        selected = Selection_torn(sorted_x, apt_x, 3)
+        
+        print("The selected fathers are: \n", selected)
+        
+        crossed_pop = Cross_BLX_alpha(selected, 0.5)
+                                       
+        #crossed_pop = Cross_Michalewicz_arit(selected)
+        
+        print("The crossed generation is: \n", crossed_pop)
+        
+        muta_pop = Muta_Michalewicz_gauss(crossed_pop, mut_tax, 0.1)
+        
+        print("The mutated generation is: \n", muta_pop)
+        
+        muta_pop_y = Func_obj1(muta_pop)
+        
+        Graph_exact(muta_pop,muta_pop_y,i)
+        
+        sorted_mut, sorted_mut_f, apt_mut = Apt_ord(muta_pop, muta_pop_y)
+        
+        print("The mutated generation (sorted) is: \n", sorted_mut)
+        print("The mutated generation (sorted) objective function values is: \n", sorted_mut_f)
+        print("The mutated generation (sorted) aptitude is: is: \n", apt_mut)
+        
+        maximum_apt.append(max(current_pop_y))
+        
+        average_apt.append(np.mean(current_pop_y))
+        
+        print("\n End of generation number: ", i, "\n")
+        
+        current_pop = sorted_x[0:elitism] + sorted_mut[0:initial_pop-elitism]
+        
+        print("\n The size of the current populations is: ", len(current_pop))
+        
+
+Genetic_Alg(size_pop, number_gen, crossover_tax, mutation_tax,number_elit)
+
+generation = np.arange(1,number_gen+1)
+
+print(average_apt)
+print(maximum_apt)
+
+graph1 = plt.plot(generation, average_apt, label = "Average Aptitude")
+grapt2 = plt.plot(generation, maximum_apt, label = "Maximum Average")
+
+plt.grid('ON',linestyle='--', alpha = 0.3)
+
+plt.xlabel("Number of generations")
+plt.ylabel("Fitness")
+
+plt.legend()
+
+plt.show()
