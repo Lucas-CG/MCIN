@@ -1,0 +1,69 @@
+import numpy as np
+import math
+import random
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+from scipy.spatial import distance
+
+def Func_obj1(X):
+    z = []
+    for cromo in X:
+        sum_x = 0
+        for index in range(len(cromo)-1):
+            
+            sum_x += ((1-cromo[index])**2) + 100*((cromo[index+1] - (cromo[index]**2))**2)
+        
+        z.append(sum_x)
+    
+    return z
+
+
+def closest_node(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return list(nodes[np.argmin(dist_2)])
+
+
+
+def Neighbours(X):
+    neigh_all = []
+    X_save = X
+    
+    for index in range(len(X)):
+        print("Length of X: ", len(X))
+        
+        particle = X[index]
+        print("The current particle is: ", particle)
+        
+        X_list = X
+        
+        neighbours = []
+        
+        while len(neighbours) < 3:
+            
+            print("Length of X: ", len(X))
+            
+            close = closest_node(particle,X_list)
+            
+            print("The closest points is: ", close)
+            print("The current list is : ", X_list)
+            
+            neighbours.append(close)
+            
+            print("The current list of neighbours is: ", neighbours)
+            print("The number of neighbours is: ", len(neighbours))
+            
+            X_list.remove(close)
+                        
+            print("Length of X: ", len(X))
+            print("The reduced list is : ", X_list)
+        
+        neigh_all.append(neighbours)
+        
+        print("The neigh list of  is: ", neigh_all)
+    
+    return neigh_all
+
+Vectors = [[1, 4], [3, 5], [4, 6], [7, 0]]
+
+Neighbours(Vectors)
