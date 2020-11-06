@@ -16,15 +16,17 @@ def Rosenbrock(X):
         z.append(sum_x)
     
     return z
-  
+
+
 def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
 
-    X_pop = X_pop
-    X_func = X_func
-    speeds = speeds
-    pbests = pbests
+    #X_pop = X_pop
+    #X_func = X_func
+    #speeds = speeds
+    #pbests = pbests
 
     new_speeds = []
+    new_bests = []
 
     for index1 in range(len(X_pop)):
 
@@ -33,39 +35,42 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
         new_pos = []
 
         speed_i = speeds[index1]
-        print("The current speed for cromossom ", index1, " is: ", speed_i)
+        ##print("The current speed for cromossom ", index1, " is: ", speed_i)
 
+        #print(pbests)
+        #print(index1)
+        #print(pbests[index1])
         best_i = pbests[index1]
-        print("The current personal best for cromossom ", index1, " is: ", best_i)
+        ##print("The current personal best (memory) for cromossom ", index1, " is: ", best_i)
 
-        list_global = Rosenbrock(pbests)
-        print("The current global list is :", list_global)
-        global_i = pbests[list_global.index(min(list_global))]
+        #list_global = Rosenbrock(pbests)########################## Testar X_pop
+        ##print("The current global list is :", list_global)
+        global_i = X_pop[X_func.index(min(X_func))]
         
-        print("The current global best in population is: ", global_i)
+        #print("The current global best in population is: ", global_i)
 
         
         for index2 in range(len(X_pop[0])):
 
             speed_0 = C0*speed_i[index2]*w
-            print("The first component of speed is: ", speed_0)
+            #print("The first component of speed is: ", speed_0)
             
             rand_1 = np.random.uniform(0, 1)
             speed_1 = C1*rand_1 * (best_i[index2] - X_pop[index1][index2])
             
-            print("The first random is: ", rand_1)
-            print(best_i[index2])
-            print(X_pop[index1][index2])
-            print("The distance from the points is: ", (best_i[index2] - X_pop[index1][index2]))
-            print("The second component of speed is: ", speed_1)
+            #print("The first random is: ", rand_1)
+            #print(best_i[index2])
+            #print(X_pop[index1][index2])
+            #print("The distance from the points is: ", (best_i[index2] - X_pop[index1][index2]))
+            #print("The second component of speed is: ", speed_1)
             
             rand_2 = np.random.uniform(0, 1)
             speed_2 = C2*rand_2 * (global_i[index2] - X_pop[index1][index2])
             
-            print("The second random is: ", rand_2)
-            print(global_i[index2])
-            print(X_pop[index1][index2])
-            print("The third component of speed is: ", speed_2)
+            #print("The second random is: ", rand_2)
+            #print(global_i[index2])
+            #print(X_pop[index1][index2])
+            #print("The third component of speed is: ", speed_2)
             
             speed_component = speed_0 + speed_1 + speed_2
 ############################################################################ Check max speed     
@@ -90,34 +95,34 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
             new_pos.append(X_pop[index1][index2] + speed_component)            
 
             
-        print("The new position for the ", index1, " cromossom is ", new_pos)
-        print("The new speed vector for the ", index1, " cromossom is ", speed_vector)
+        #print("The new position for the ", index1, " cromossom is ", new_pos)
+        #print("The new speed vector for the ", index1, " cromossom is ", speed_vector)
         
         
         reevaluate = Rosenbrock([new_pos])[0]
-        print("The reevaluated value for cromossom ", index1, " is : ", reevaluate)
+        #print("The reevaluated value for cromossom ", index1, " is : ", reevaluate)
 
-        if reevaluate < list_global[index1]:
-            print("O indivíduo achou uma nova melhor posição: ", new_pos)
-            pbests[index1] = new_pos
+        if reevaluate < X_func[index1]:
+            #print("O indivíduo achou uma nova melhor posição: ", new_pos)
+            new_bests.append(new_pos)
         
-        else:
-            print("O personal best foi mantido!")
-            pbests[index1] = X_pop[index1]
+        elif reevaluate > X_func[index1]:
+            #print("O personal best foi mantido!")
+            new_bests.append(pbests[index1])
         
         
-        print("The new best value for cromossom ", index1, " is : ", pbests[index1])
-        print("The current best values are: ", pbests)
+        #print("The new best value for cromossom ", index1, " is : ", new_bests[index1])
 
         X_pop[index1] = new_pos
         X_func[index1] = reevaluate
         new_speeds.append(speed_vector)
 
 
-    return X_pop, X_func, new_speeds, pbests
-    
-    
-  def PSO(initial_pop, generations, C0, C1, C2, V_max):
+    return X_pop, X_func, new_speeds, new_bests
+
+
+
+def PSO(initial_pop, generations, C0, C1, C2, V_max):
     
     best_par = []
     first_pop_x = []
@@ -140,13 +145,13 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
         
     for gen_id in range(generations):
         
-        print("Start of generation number: ", gen_id+1)
+        #print("Start of generation number: ", gen_id+1)
                 
         current_pop_y = Rosenbrock(current_pop)
         
-        print("The current population is: ", current_pop)
-        print("The current speeds are: ", speeds)
-        print("The object function is: ", current_pop_y)
+        #print("The current population is: ", current_pop)
+        #print("The current speeds are: ", speeds)
+        #print("The object function is: ", current_pop_y)
         
         if gen_id in best_ref:
             best_par.append(min(current_pop_y))
@@ -167,25 +172,26 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
             print("Success")
             print("End in Run nº: ", num_runs)
             print("Minimum result found in: ", current_pop[current_pop_y.index(best_in)], " : ", best_in)
+            print("Best parcials :", best_par)
             return best_in, worst_in, mean_in, median_in, best_par, num_runs, success
             
             
             break
             
-        X_pop, X_func, new_speeds, pbest = Movement(current_pop,
-                                                    current_pop_y,
-                                                    speeds,
-                                                    personal_bests,
-                                                    C0,
-                                                    C1,
-                                                    C2,
-                                                    V_max,
-                                                    0.9)
+        X_pop, X_func, new_speeds, new_pbest = Movement(current_pop,
+                                                        current_pop_y,
+                                                        speeds,
+                                                        personal_bests,
+                                                        C0,
+                                                        C1,
+                                                        C2,
+                                                        V_max,
+                                                        0.9)
 
         
         current_pop = X_pop
         speeds = new_speeds
-        personal_bests = pbest
+        personal_bests = new_pbest
         
     
     best_in = min(current_pop_y)
@@ -198,9 +204,11 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
     best_par.append(best_in)
     
     print("No success")
+    print("Best parcials :", best_par)
     print("Minimum result found in: ", current_pop[current_pop_y.index(best_in)], " : ", best_in)
        
     return best_in, worst_in, mean_in, median_in, best_par, num_runs, success
+
 
 min_values = [-1,-1]
 max_values = [2,2]
