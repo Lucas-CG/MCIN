@@ -1,0 +1,233 @@
+import numpy as np
+import math
+import random
+import xlwt
+from xlwt import Workbook
+
+
+def Rosenbrock(X):
+    z = []
+    for cromo in X:
+        sum_x = 0
+        for index in range(len(cromo)-1):
+            
+            sum_x += ((1-cromo[index])**2) + 100*((cromo[index+1] - (cromo[index]**2))**2)
+        
+        z.append(sum_x)
+    
+    return z
+  
+def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
+
+    X_pop = X_pop
+    X_func = X_func
+    speeds = speeds
+    pbests = pbests
+
+    new_speeds = []
+
+    for index1 in range(len(X_pop)):
+
+        speed_vector = []
+
+        new_pos = []
+
+        speed_i = speeds[index1]
+        print("The current speed for cromossom ", index1, " is: ", speed_i)
+
+        best_i = pbests[index1]
+        print("The current personal best for cromossom ", index1, " is: ", best_i)
+
+        list_global = Rosenbrock(pbests)
+        print("The current global list is :", list_global)
+        global_i = pbests[list_global.index(min(list_global))]
+        
+        print("The current global best in population is: ", global_i)
+
+        
+        for index2 in range(len(X_pop[0])):
+
+            speed_0 = C0*speed_i[index2]*w
+            print("The first component of speed is: ", speed_0)
+            
+            rand_1 = np.random.uniform(0, 1)
+            speed_1 = C1*rand_1 * (best_i[index2] - X_pop[index1][index2])
+            
+            print("The first random is: ", rand_1)
+            print(best_i[index2])
+            print(X_pop[index1][index2])
+            print("The distance from the points is: ", (best_i[index2] - X_pop[index1][index2]))
+            print("The second component of speed is: ", speed_1)
+            
+            rand_2 = np.random.uniform(0, 1)
+            speed_2 = C2*rand_2 * (global_i[index2] - X_pop[index1][index2])
+            
+            print("The second random is: ", rand_2)
+            print(global_i[index2])
+            print(X_pop[index1][index2])
+            print("The third component of speed is: ", speed_2)
+            
+            speed_component = speed_0 + speed_1 + speed_2
+############################################################################ Check max speed     
+            if abs(speed_component) > V_max:
+        
+                if speed_component > 0:
+                    speed_component = 0.5*V_max                    
+                else:
+                    speed_component = - 0.5*V_max
+################################################################################ Check boundaries                    
+            if speed_component + X_pop[index1][index2] > max_values[index2]:
+                
+                speed_component = max_values[index2] - X_pop[index1][index2]
+                
+            if speed_component + X_pop[index1][index2] < min_values[index2]:
+                
+                speed_component = min_values[index2] - X_pop[index1][index2]
+
+
+            speed_vector.append(speed_component)
+            
+            new_pos.append(X_pop[index1][index2] + speed_component)            
+
+            
+        print("The new position for the ", index1, " cromossom is ", new_pos)
+        print("The new speed vector for the ", index1, " cromossom is ", speed_vector)
+        
+        
+        reevaluate = Rosenbrock([new_pos])[0]
+        print("The reevaluated value for cromossom ", index1, " is : ", reevaluate)
+
+        if reevaluate < list_global[index1]:
+            print("O indivíduo achou uma nova melhor posição: ", new_pos)
+            pbests[index1] = new_pos
+        
+        else:
+            print("O personal best foi mantido!")
+            pbests[index1] = X_pop[index1]
+        
+        
+        print("The new best value for cromossom ", index1, " is : ", pbests[index1])
+        print("The current best values are: ", pbests)
+
+        X_pop[index1] = new_pos
+        X_func[index1] = reevaluate
+        new_speeds.append(speed_vector)
+
+
+    return X_pop, X_func, new_speeds, pbests
+    
+    
+  def PSO(initial_pop, generations, C0, C1, C2, V_max):
+    
+    best_par = []
+    first_pop_x = []
+    speeds = []
+    
+    success = 0
+
+    for size in range(initial_pop):
+        variables = []
+        speed = []
+        for index in range(len(min_values)):
+            variables.append(random.uniform(min_values[index],max_values[index]))
+            speed.append(random.uniform(-1,1))
+        
+        first_pop_x.append(variables)
+        speeds.append(speed)
+        
+    current_pop = first_pop_x
+    personal_bests = current_pop
+        
+    for gen_id in range(generations):
+        
+        print("Start of generation number: ", gen_id+1)
+                
+        current_pop_y = Rosenbrock(current_pop)
+        
+        print("The current population is: ", current_pop)
+        print("The current speeds are: ", speeds)
+        print("The object function is: ", current_pop_y)
+        
+        if gen_id in best_ref:
+            best_par.append(min(current_pop_y))
+        
+        
+        if min(current_pop_y) - global_min < 0.00000001:
+            best_in = min(current_pop_y)
+            worst_in = max(current_pop_y)
+            mean_in = np.mean(current_pop_y)
+            median_in = np.median(current_pop_y)
+            
+            num_runs = gen_id + 1
+            success += 1
+            
+            while len(best_par) < len(best_ref):
+                best_par.append(best_in)
+               
+            print("Success")
+            print("End in Run nº: ", num_runs)
+            print("Minimum result found in: ", current_pop[current_pop_y.index(best_in)], " : ", best_in)
+            return best_in, worst_in, mean_in, median_in, best_par, num_runs, success
+            
+            
+            break
+            
+        X_pop, X_func, new_speeds, pbest = Movement(current_pop,
+                                                    current_pop_y,
+                                                    speeds,
+                                                    personal_bests,
+                                                    C0,
+                                                    C1,
+                                                    C2,
+                                                    V_max,
+                                                    0.9)
+
+        
+        current_pop = X_pop
+        speeds = new_speeds
+        personal_bests = pbest
+        
+    
+    best_in = min(current_pop_y)
+    worst_in = max(current_pop_y)
+    mean_in = np.mean(current_pop_y)
+    median_in = np.median(current_pop_y)
+    
+    num_runs = gen_id + 1
+    
+    best_par.append(best_in)
+    
+    print("No success")
+    print("Minimum result found in: ", current_pop[current_pop_y.index(best_in)], " : ", best_in)
+       
+    return best_in, worst_in, mean_in, median_in, best_par, num_runs, success
+
+min_values = [-1,-1]
+max_values = [2,2]
+global_min = 0
+
+
+
+number_pop = int(input("Enter the size of the population (NP):  "))
+number_gen = int(input("Enter the number of generations:  "))    
+C0 = float(input("Enter the tax C0 VALUE: "))
+C1 = float(input("Enter the tax C1 VALUE: "))
+C2 = float(input("Enter the tax C2 VALUE: "))
+V_max = float(input("Enter the maximum speed allowed: "))
+
+
+best_ref = [0*number_gen,
+            0.001*number_gen,
+            0.01*number_gen,
+            0.1*number_gen,
+            0.2*number_gen,
+            0.3*number_gen,
+            0.4*number_gen,
+            0.5*number_gen,
+            0.6*number_gen,
+            0.7*number_gen,
+            0.8*number_gen,
+            0.9*number_gen,
+            1.0*number_gen]
+
+PSO(number_pop, number_gen, C0, C1, C2, V_max)
