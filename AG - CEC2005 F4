@@ -1,0 +1,482 @@
+import numpy as np
+from optproblems import cec2005
+import random
+import math
+import xlwt
+from xlwt import Workbook
+
+function1 = cec2005.F4(10)
+
+def Func_obj1(X):
+    z = []
+    for cromo in X:
+        
+        z.append(function1(cromo))
+    
+    return z
+
+
+def Apt_ord(x_values,f_values):
+    sorted_f = sorted(f_values)
+
+    pop_sort_x = []
+
+    for item in sorted_f:
+        pop_sort_x.append(x_values[f_values.index(item)])
+        
+    apt_x = []
+    apt_x_acum = []
+    acum = 0
+
+    for i in range(1,size_pop+1):
+        value = 2*(size_pop-i)/(size_pop-1)
+        apt_x.append(value)
+        acum += value 
+        apt_x_acum.append(acum)
+        
+    return pop_sort_x, sorted_f, apt_x  # Adicionar t_x_acum #
+
+
+def Selection_torn(x_values, apt_values, number_contestant):
+    selected_torn = []
+    selected_torn_apt = []
+    
+    #print("Start of tornament selection", "\n")
+
+    for i in range(0,size_pop):
+        itens = random.sample(range(0, size_pop), number_contestant)
+        
+        #print(itens)
+        #print(apt_values[itens[0]],apt_values[itens[1]],apt_values[itens[2]])
+        
+        max_apt = max(apt_values[itens[0]],apt_values[itens[1]],apt_values[itens[2]])
+        
+        #print(max_apt)
+        #print(x_values[apt_values.index(max_apt)])
+        
+        selected_torn.append(x_values[apt_values.index(max_apt)])
+    
+    #print("End of tornament selection", "\n")
+    return selected_torn
+
+
+def Cross_BLX_alpha(inter_pop, alpha):
+    crossed_generation = []
+    
+    #print("Start of the Crossover")
+    
+    while len(crossed_generation) < len(inter_pop):
+        fathers = random.sample(range(0, len(inter_pop)), 2)
+        #print(fathers)
+        
+        father_1 = inter_pop[fathers[0]]
+        father_2 = inter_pop[fathers[1]]
+        
+        #print("The first father is: ", father_1)
+        #print("The second father is: ", father_2)
+        
+        cross_over_test = random.random()
+        #print(cross_over_test)
+
+        if cross_over_test < crossover_tax:
+            #print("Crossed")
+            
+            beta = np.random.uniform(-alpha, 1+alpha)
+            #print("The value of beta is: ", beta)
+            
+            son = []
+            test_fact = 0
+            
+            for index in range(len(father_1)):    
+                variable = father_1[index] + beta*(father_2[index] - father_1[index])
+                son.append(variable)
+                
+                if min_values[index] > variable or variable > max_values[index]:
+                    test_fact += 1
+                                
+            #print("The son created is: ", son)
+            
+            if test_fact == 0:
+                #if son not in crossed_generation:######################################### Non-repeated
+                crossed_generation.append(son)
+                
+            else:
+                #print("Non factible")
+                pass
+
+        else:
+            #print("Not crossed")
+            if Func_obj1([father_1])[0] < Func_obj1([father_2])[0]:
+                #if father_1 not in crossed_generation:################################### Non-repeated
+                crossed_generation.append(father_1)  # Non-repeated #
+                
+                #else:
+                    #pass
+            else:
+                #if father_2 not in crossed_generation:################################## Non-repeated
+                crossed_generation.append(father_2)
+                
+                #else:
+                    #pass
+    
+    #print("End of the Crossover")
+    return crossed_generation
+
+
+def Cross_Michalewicz_Arit(inter_pop):
+    crossed_generation = []
+    
+    #print("Start of the Crossover")
+    
+    while len(crossed_generation) < len(inter_pop):
+        fathers = random.sample(range(0, len(inter_pop)), 2)
+        #print(fathers)
+
+        cross_over_test = random.random()
+        #print(cross_over_test)
+
+        father_1 = inter_pop[fathers[0]]
+        father_2 = inter_pop[fathers[1]]
+        
+        #print("The first father is: ", father_1)
+        #print("The second father is: ", father_2)
+        
+        cross_over_test = random.random()
+        #print(cross_over_test)
+
+        if cross_over_test < crossover_tax:
+            #print("Crossed")
+            
+            beta = beta = np.random.uniform(0,1)
+            #print("The value of beta is: ", beta)
+            
+            son1 = []
+            son2 = []
+            
+            for index in range(len(father_1)):    
+                variable_1 = beta*father_1[index] + (1-beta)*father_2[index]
+                variable_2 = (1-beta)*father_1[index] + beta*father_2[index]
+                
+                son1.append(variable_1)
+                son2.append(variable_2)
+                                               
+            #print("The sons created are: ", son1, son2)
+            
+            #if son1 not in crossed_generation:################################## Non-repeated
+                #print("Son1 selected")
+            crossed_generation.append(son1)
+            
+            #if son1 in crossed_generation:################################## Non-repeated
+                #print("Son1 already in the pop")
+                #pass
+            
+            #if son2 not in crossed_generation:################################## Non-repeated
+                #print("Son2 selected")
+            crossed_generation.append(son2)
+            
+            #if son2 in crossed_generation:################################## Non-repeated
+                #print("Son2 already in the pop")
+                #pass
+        
+        
+        
+        else:
+            #print("Not crossed")
+            #if father_1 not in crossed_generation:################################## Non-repeated
+                #print("Father1 selected")
+            crossed_generation.append(father_1)
+            
+            #if father_1 in crossed_generation:################################## Non-repeated
+                #print("Father1 already in the pop")
+                #pass
+            
+            #if father_2 not in crossed_generation:################################## Non-repeated
+                #print("Father2 selected")
+            crossed_generation.append(father_2)
+            
+            #if father_2 in crossed_generation:################################## Non-repeated
+                #print("Father2 already in the pop")
+                #pass
+        
+    return crossed_generation
+
+def Muta_Michalewicz_gauss(crossed_generation, muta_tax, gen_n, gen_id):
+    muta_generation = []
+    next_generation_f = []
+    
+    #print("Start of the Mutation")
+    
+    for cromossom in crossed_generation:
+        mut_variable = []
+        
+        for variable in cromossom:
+            muta_test = random.random()
+
+            if muta_test < muta_tax:
+                #print("Mutated")
+
+                sigma = 1 - 0.9*(gen_id/gen_n)
+
+                mutated = variable + np.random.normal(0,sigma)
+
+                if mutated > 100:
+                    mutated = 100
+
+                if mutated < -100:
+                    mutated = -100
+
+
+                mut_variable.append(mutated)
+
+            else:
+                #print("Not mutated")
+                mut_variable.append(variable)
+        
+        muta_generation.append(mut_variable)
+               
+    return muta_generation
+
+def Muta_Uniform(crossed_generation, muta_tax):
+    #print("Start of the Mutation")
+    
+    muta_generation = []
+    next_generation_f = []
+    
+    for cromossom in crossed_generation:
+        mut_variable = []
+        
+        for index in range(len(cromossom)):
+            muta_test = random.random()
+
+            if muta_test < muta_tax:
+                #print("Mutated")
+                mut_variable.append(random.uniform(min_values[index],max_values[index]))
+
+            else:
+                #print("Not mutated")
+                mut_variable.append(cromossom[index])
+        
+        muta_generation.append(mut_variable)
+        
+    return muta_generation
+
+
+def Genetic_Alg(initial_pop, generations, cross_tax, mut_tax, elitism):
+    success = 0
+    #average_apt = []
+    #maximum_apt = []
+    #minimum_apt = []
+    best_par = []
+    
+    first_pop_x = []
+
+    for size in range(size_pop):
+        variables = []
+        for index in range(len(min_values)):
+            variables.append(random.uniform(min_values[index],max_values[index]))
+        
+        first_pop_x.append(variables)
+        
+    
+    current_pop = first_pop_x
+    
+    for gen_id in range(generations):
+        
+        #print("Start of generation number: ", gen_id)
+                
+        current_pop_y = Func_obj1(current_pop)
+        
+        if gen_id in best_ref:
+            best_par.append(min(current_pop_y) - global_min)
+        
+        sorted_x, sorted_y, apt_x = Apt_ord(current_pop, current_pop_y)
+        
+        #print("The current population is: \n", sorted_x)
+        #print("The current population objective funciton is: \n", sorted_y)
+        #print("The current population aptitude is: \n", apt_x)
+        
+        selected = Selection_torn(sorted_x, apt_x, 3)
+        
+        #print("The selected fathers are: \n", selected)
+        
+        #crossed_pop = Cross_BLX_alpha(selected, 0.5)
+                                       
+        crossed_pop = Cross_Michalewicz_Arit(selected)
+        
+        #print("The crossed generation is: \n", crossed_pop)
+        
+        muta_pop = Muta_Michalewicz_gauss(crossed_pop, mut_tax, generations, gen_id)
+        
+        #muta_pop = Muta_Uniform(crossed_pop, mut_tax)
+        
+        #print("The mutated generation is: \n", muta_pop)
+        
+        muta_pop_y = Func_obj1(muta_pop)
+        
+        #Graph_exact(muta_pop,muta_pop_y,i)
+        
+        sorted_mut, sorted_mut_f, apt_mut = Apt_ord(muta_pop, muta_pop_y)
+        
+        #print("The mutated generation (sorted) is: \n", sorted_mut)
+        #print("The mutated generation (sorted) objective function values is: \n", sorted_mut_f)
+        #print("The mutated generation (sorted) aptitude is: is: \n", apt_mut)
+        
+        #maximum_apt.append(min(sorted_mut_f))
+        
+        #average_apt.append(np.mean(sorted_mut_f))
+        
+        #print("End of generation number: ", gen_id)
+
+
+        
+        if min(sorted_mut_f) - global_min < 0.00000001:            
+            best_in = min(sorted_mut_f) - global_min
+            worst_in = max(sorted_mut_f) - global_min
+            mean_in = np.mean(sorted_mut_f) - global_min
+            median_in = np.median(sorted_mut_f)
+            
+            num_runs = gen_id + 1
+            success += 1
+            
+            while len(best_par) < len(best_ref):
+                best_par.append(best_in)
+            
+            print("Success")
+            print("End in Run nº: ", num_runs)
+            print("Minimum result found in: ", sorted_mut[sorted_mut_f.index(min(sorted_mut_f))], " : ", best_in)
+            
+            return best_in, worst_in, mean_in, median_in, best_par, num_runs, success #maximum_apt, average_apt, minimum_apt, 
+            
+            
+            break
+
+        
+        current_pop = sorted_x[0:elitism] + sorted_mut[0:initial_pop-elitism]
+        
+        #if max(sorted_mut_f) - min(sorted_mut_f) < 0.00000001:
+        #   print("###################################################################################")
+        #    print("                             Máximo local encontrado                               ")
+        #    print("coordinates:", sorted_mut[0])
+        #    print("míninum value: ", max(sorted_mut_f))
+        #    print("maximum value: ", min(sorted_mut_f)) ###Tentar evitar de fazer muitas reavaliações  
+        #   print("###################################################################################")
+            
+        #    new_pop_x = []
+            
+        #    for size in range(size_pop):
+        #        variables = []
+        #        for index in range(len(min_values)):
+        #            variables.append(random.uniform(min_values[index],max_values[index]))
+        #
+        #        new_pop_x.append(variables)
+        #        
+        #    current_pop = new_pop_x       
+        
+        #print("\n The size of the current populations is: ", len(current_pop))
+        
+    best_in = min(sorted_mut_f) - global_min
+    worst_in = max(sorted_mut_f) - global_min
+    mean_in = np.mean(sorted_mut_f) - global_min
+    median_in = np.median(sorted_mut_f)
+
+    num_runs = gen_id + 1
+    success = 0
+    
+    best_par.append(best_in)
+    
+    print("No success")
+    print("End in Run nº: ", num_runs)
+    print("Minimum result found in: ", sorted_mut[sorted_mut_f.index(min(sorted_mut_f))], " : ", best_in)
+    
+    return best_in, worst_in, mean_in, median_in, best_par, num_runs, success #maximum_apt, average_apt, minimum_apt, 
+     
+
+min_values = [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100]
+max_values = [100 , 100, 100,100 , 100, 100, 100, 100,100 ,100]
+global_min = -450.0
+
+
+size_pop = int(input("Enter the size of the population:  "))
+number_gen = int(input("Enter the number of generations:  "))    
+crossover_tax = float(input("Enter the tax for crossover (60%-90%): "))/100
+mutation_tax = float(input("Enter the tax for mutation: (0.5%-1%): "))/100
+number_elit = int(input("Enter the number of elit parents in each generation: "))
+
+
+best_ref = [0*number_gen,
+            0.001*number_gen,
+            0.01*number_gen,
+            0.1*number_gen,
+            0.2*number_gen,
+            0.3*number_gen,
+            0.4*number_gen,
+            0.5*number_gen,
+            0.6*number_gen,
+            0.7*number_gen,
+            0.8*number_gen,
+            0.9*number_gen,
+            1.0*number_gen]
+
+
+def Output_Excel(number_runs):
+	success_rate = 0
+
+	# Workbook is created 
+	wb = Workbook() 
+
+	# add_sheet is used to create sheet. 
+	sheet1 = wb.add_sheet('AG_MWZ')
+
+	sheet1.write(1, 1, "RUN nº")
+	sheet1.write(2,  1, "Closed in run")
+	sheet1.write(3,  1, "Best result")
+	sheet1.write(4,  1, "Worst result")
+	sheet1.write(5,  1, "Mean result")
+	sheet1.write(6,  1, "Median result")
+	sheet1.write(7,  1, "Parcials")
+	sheet1.write(8,  1, "Erro para FES=0,0*MaxFES")
+	sheet1.write(9,  1, "Erro para FES=0,001*MaxFES")
+	sheet1.write(10, 1, "Erro para FES=0,01*MaxFES")
+	sheet1.write(11, 1, "Erro para FES=0,1*MaxFES")
+	sheet1.write(12, 1, "Erro para FES=0,2*MaxFES")
+	sheet1.write(13, 1, "Erro para FES=0,3*MaxFES")
+	sheet1.write(14, 1, "Erro para FES=0,4*MaxFES")
+	sheet1.write(15, 1, "Erro para FES=0,5*MaxFES")
+	sheet1.write(16, 1, "Erro para FES=0,6*MaxFES")
+	sheet1.write(17, 1, "Erro para FES=0,7*MaxFES")
+	sheet1.write(18, 1, "Erro para FES=0,8*MaxFES")
+	sheet1.write(19, 1, "Erro para FES=0,9*MaxFES")
+	sheet1.write(20, 1, "Erro para FES=1,0*MaxFES")
+	sheet1.write(21, 1, "Success rate")
+
+	for run in range(number_runs):
+	    print("Start of run ", run)
+	    
+	    BEST, WORST, MEAN, MEDIAN, BEST_PAR, NUM_RUNS, SUCCESS = Genetic_Alg(size_pop,
+                                                                            number_gen,
+                                                                            crossover_tax,
+                                                                            mutation_tax,
+                                                                            number_elit)
+	    
+	    sheet1.write(1, run+2, (run+1))
+	    sheet1.write(2, run+2, (NUM_RUNS))
+	    sheet1.write(3, run+2, (BEST))
+	    sheet1.write(4, run+2, (WORST))
+	    sheet1.write(5, run+2, (MEAN))
+	    sheet1.write(6, run+2, (MEDIAN))
+	    
+	    for index in range(len(BEST_PAR)):
+	        
+	        sheet1.write(8+index,  run+2, (BEST_PAR[index]))
+	    
+	    
+	    success_rate += SUCCESS
+	            
+
+	sheet1.write(21, 2, (success_rate))
+
+	wb.save('CEC2005 Function4 - AG_MWZ.xls') 
+
+	return success_rate/number_runs
+           
+Output_Excel(25)
