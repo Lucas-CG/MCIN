@@ -5,7 +5,7 @@ import math
 import xlwt
 from xlwt import Workbook
 
-function1 = cec2005.F4(10)
+function1 = cec2005.F1(10)
 
 def Func_obj1(X):
     z = []
@@ -216,17 +216,7 @@ def Muta_Michalewicz_gauss(crossed_generation, muta_tax, gen_n, gen_id):
                 #print("Mutated")
 
                 sigma = 1 - 0.9*(gen_id/gen_n)
-
-                mutated = variable + np.random.normal(0,sigma)
-
-                if mutated > 100:
-                    mutated = 100
-
-                if mutated < -100:
-                    mutated = -100
-
-
-                mut_variable.append(mutated)
+                mut_variable.append(variable + np.random.normal(0,sigma))
 
             else:
                 #print("Not mutated")
@@ -349,7 +339,6 @@ def Genetic_Alg(initial_pop, generations, cross_tax, mut_tax, elitism):
             
             
             break
-
         
         current_pop = sorted_x[0:elitism] + sorted_mut[0:initial_pop-elitism]
         
@@ -389,7 +378,6 @@ def Genetic_Alg(initial_pop, generations, cross_tax, mut_tax, elitism):
     print("Minimum result found in: ", sorted_mut[sorted_mut_f.index(min(sorted_mut_f))], " : ", best_in)
     
     return best_in, worst_in, mean_in, median_in, best_par, num_runs, success #maximum_apt, average_apt, minimum_apt, 
-     
 
 min_values = [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100]
 max_values = [100 , 100, 100,100 , 100, 100, 100, 100,100 ,100]
@@ -475,7 +463,7 @@ def Output_Excel(number_runs):
 
 	sheet1.write(21, 2, (success_rate))
 
-	wb.save('CEC2005 Function4 - AG_MWZ.xls') 
+	wb.save('Rosenbrock Function - AG_MWZ.xls') 
 
 	return success_rate/number_runs
            
