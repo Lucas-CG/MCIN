@@ -5,7 +5,7 @@ import math
 import xlwt
 from xlwt import Workbook
 
-function1 = cec2005.F1(10)
+function1 = cec2005.F5(10)
 
 def Func_obj1(X):
     z = []
@@ -76,25 +76,36 @@ def Movement(X_pop, X_func, speeds, pbests, C0, C1, C2, V_max, w):
                 else:
                     speed_component = -V_max
 ################################################################################ Check boundaries                    
-            if speed_component + X_pop[index1][index2] > max_values[index2]:
-                speed_component = -speed_component
-            if speed_component + X_pop[index1][index2] < min_values[index2]: 
-                speed_component = -speed_component
-
-
-            moved = X_pop[index1][index2] + speed_component
-
-            speed_vector.append(speed_component)
-            
-
-            if  moved >=  max_values[index2]:
+            if speed_component + X_pop[index1][index2] >= max_values[index2]:
+                
                 new_pos.append(max_values[index2])
 
-            elif  moved <=  min_values[index2]:
+                speed_component = - speed_component
+            
+            elif speed_component + X_pop[index1][index2] <= min_values[index2]: 
+            
                 new_pos.append(min_values[index2])
 
+                speed_component = - speed_component
+
+
+            #moved = X_pop[index1][index2] + speed_component
+
+            #speed_vector.append(speed_component)
+            
+
+            #if  moved >=  max_values[index2]:
+                #new_pos.append(max_values[index2])
+
+            #elif  moved <=  min_values[index2]:
+                #new_pos.append(min_values[index2])
+
             else:
-                new_pos.append(moved)             
+                new_pos.append(X_pop[index1][index2] + speed_component)
+
+            speed_vector.append(speed_component)
+
+
 
             
         #print("The new position for the ", index1, " cromossom is ", new_pos)
@@ -215,7 +226,7 @@ def PSO(initial_pop, generations, C0, C1, C2, V_max):
 
 min_values = [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100]
 max_values = [100 , 100, 100,100 , 100, 100, 100, 100,100 ,100]
-global_min = -450.0
+global_min = -310.0
 
 
 
@@ -297,8 +308,8 @@ def Output_Excel(number_runs):
 
 	sheet1.write(21, 2, (success_rate))
 
-	wb.save('CEC2005 Function1 - PSO4.xls') 
+	wb.save('CEC2005 Function5 - PSO4.xls') 
 
 	return success_rate/number_runs
            
-Output_Excel(25)
+Output_Excel(5)
