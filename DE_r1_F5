@@ -1,0 +1,242 @@
+import numpy as np
+from optproblems import cec2005
+import random
+import math
+import xlwt
+from xlwt import Workbook
+
+function1 = cec2005.F5(10)
+
+def Func_obj1(X):
+    z = []
+    for cromo in X:
+        
+        z.append(function1(cromo))
+    
+    return z
+
+
+def DE_rand_1(list1, list2, list3, F):
+    vec_list = []
+    for index1 in range(len(list1)):
+    	movement = list1[index1] + F*(list3[index1] - list2[index1])
+    	
+    	if movement > max_values[index1]:
+    		vec_list.append(max_values[index1])
+
+    	elif movement < min_values[index1]:
+    		vec_list.append(min_values[index1])
+    	
+    	else:
+    		vec_list.append(movement)
+    return vec_list
+
+
+def Movement(X_pop, X_func, CR, F):
+            
+    for index1 in range(0,len(X_pop)):
+
+        r_n = random.sample(range(0, len(X_func)), 3)
+
+        #print(r_n)
+
+        while index1 in r_n:
+            r_n = random.sample(range(0, len(X_func)), 3)
+            #print(r_n)
+
+        x_r1 = X_pop[r_n[0]]
+        x_r2 = X_pop[r_n[1]]
+        x_r3 = X_pop[r_n[2]]
+
+        result = DE_rand_1(x_r1, x_r2, x_r3, F)
+######################################################################################### Start of cross-over
+        xi = X_pop[index1]
+        vi = result
+
+        trial = []
+
+        j_rand = random.sample(range(0, len(X_pop)), 1)
+
+        for index2 in range(len(xi)):
+            cross_over_test = random.random()
+
+            if cross_over_test < CR or index2 == j_rand:
+                trial.append(vi[index2])
+            
+            else:
+                trial.append(xi[index2])
+
+
+        if Func_obj1([trial])[0] < X_func[index1]:
+            
+            X_pop[index1] = trial
+            #X_func[index1] = Func_obj1([trial])[0]
+        
+        else:
+            pass
+
+    return X_pop
+
+
+def DE_rand1(initial_pop, generations, CR, F):
+    #average_apt = []
+    #maximum_apt = []
+    #minimum_apt = []
+    
+    best_par = []
+    first_pop_x = []
+    
+    success = 0
+
+    for size in range(initial_pop):
+        variables = []
+        for index in range(len(min_values)):
+            variables.append(random.uniform(min_values[index],max_values[index]))
+        
+        first_pop_x.append(variables)
+        
+    
+    current_pop = first_pop_x
+    
+    for gen_id in range(generations):
+        
+        #print("Start of generation number: ", gen_id)
+                
+        current_pop_y = Func_obj1(current_pop)
+        
+        #print("The current population is: ", current_pop)
+        #print("The object function is: ", current_pop_y)
+        
+        if gen_id in best_ref:
+            best_par.append(min(current_pop_y) - global_min)
+        
+        #Stop criteria#
+        
+        if min(current_pop_y) - global_min < 0.00000001:
+            best_in = min(current_pop_y) - global_min
+            worst_in = max(current_pop_y) - global_min
+            mean_in = np.mean(current_pop_y) - global_min
+            median_in = np.median(current_pop_y)
+            
+            num_runs = gen_id + 1
+            success += 1
+            
+            while len(best_par) < len(best_ref):
+                best_par.append(best_in)
+            
+                        
+            print("Success")
+            print("End in Run nº: ", num_runs)
+            print("Minimum result found in: ", current_pop[current_pop_y.index(min(current_pop_y))], " : ", best_in)
+            return best_in, worst_in, mean_in, median_in, best_par, num_runs, success #maximum_apt, average_apt, minimum_apt,
+            
+            
+            break
+
+        current_pop = Movement(current_pop, current_pop_y, CR, F)    
+        
+    
+    best_in = min(current_pop_y) - global_min
+    worst_in = max(current_pop_y) - global_min
+    mean_in = np.mean(current_pop_y) - global_min
+    median_in = np.median(current_pop_y)
+    
+    num_runs = gen_id + 1
+    success += 0
+    
+    while len(best_par) < len(best_ref):
+        best_par.append(best_in)
+    
+                
+    print("No Success")
+    print("End in Run nº: ", num_runs)
+    print("Minimum result found in: ", current_pop[current_pop_y.index(min(current_pop_y))], " : ", best_in)
+    return best_in, worst_in, mean_in, median_in, best_par, num_runs, success #maximum_apt, average_apt, minimum_apt, 
+
+
+
+min_values = [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100]
+max_values = [100 , 100, 100,100 , 100, 100, 100, 100,100 ,100]
+global_min = -310.0
+
+number_pop = int(input("Enter the size of the population (NP):  "))
+number_gen = int(input("Enter the number of generations:  "))    
+cross_rate = float(input("Enter the tax for crossover (60%-90%): "))/100
+F_step = float(input("Enter the size of step F: "))
+
+
+best_ref = [0*number_gen,
+            0.001*number_gen,
+            0.01*number_gen,
+            0.1*number_gen,
+            0.2*number_gen,
+            0.3*number_gen,
+            0.4*number_gen,
+            0.5*number_gen,
+            0.6*number_gen,
+            0.7*number_gen,
+            0.8*number_gen,
+            0.9*number_gen,
+            1.0*number_gen]
+
+
+def Output_Excel(number_runs):
+	success_rate = 0
+
+	# Workbook is created 
+	wb = Workbook() 
+
+	# add_sheet is used to create sheet. 
+	sheet1 = wb.add_sheet('DE_r1')
+
+	sheet1.write(1, 1, "RUN nº")
+	sheet1.write(2,  1, "Closed in run")
+	sheet1.write(3,  1, "Best result")
+	sheet1.write(4,  1, "Worst result")
+	sheet1.write(5,  1, "Mean result")
+	sheet1.write(6,  1, "Median result")
+	sheet1.write(7,  1, "Parcials")
+	sheet1.write(8,  1, "Erro para FES=0,0*MaxFES")
+	sheet1.write(9,  1, "Erro para FES=0,001*MaxFES")
+	sheet1.write(10, 1, "Erro para FES=0,01*MaxFES")
+	sheet1.write(11, 1, "Erro para FES=0,1*MaxFES")
+	sheet1.write(12, 1, "Erro para FES=0,2*MaxFES")
+	sheet1.write(13, 1, "Erro para FES=0,3*MaxFES")
+	sheet1.write(14, 1, "Erro para FES=0,4*MaxFES")
+	sheet1.write(15, 1, "Erro para FES=0,5*MaxFES")
+	sheet1.write(16, 1, "Erro para FES=0,6*MaxFES")
+	sheet1.write(17, 1, "Erro para FES=0,7*MaxFES")
+	sheet1.write(18, 1, "Erro para FES=0,8*MaxFES")
+	sheet1.write(19, 1, "Erro para FES=0,9*MaxFES")
+	sheet1.write(20, 1, "Erro para FES=1,0*MaxFES")
+	sheet1.write(21, 1, "Success rate")
+
+	for run in range(number_runs):
+	    print("Start of run ", run)
+	    
+	    BEST, WORST, MEAN, MEDIAN, BEST_PAR, NUM_RUNS, SUCCESS = DE_rand1(number_pop,
+                                                                            number_gen,
+                                                                            cross_rate,
+                                                                            F_step)
+	    
+	    sheet1.write(1, run+2, (run+1))
+	    sheet1.write(2, run+2, (NUM_RUNS))
+	    sheet1.write(3, run+2, (BEST))
+	    sheet1.write(4, run+2, (WORST))
+	    sheet1.write(5, run+2, (MEAN))
+	    sheet1.write(6, run+2, (MEDIAN))
+	    
+	    for index in range(len(BEST_PAR)):
+	        
+	        sheet1.write(8+index,  run+2, (BEST_PAR[index]))
+	    
+	    
+	    success_rate += SUCCESS
+	            
+
+	sheet1.write(21, 2, (success_rate))
+
+	wb.save('CEC2005 Function5 - DEr1_cl.xls') 
+
+	return success_rate/number_runs
+           
