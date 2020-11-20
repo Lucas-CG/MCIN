@@ -450,7 +450,7 @@ if __name__ == '__main__':
 
     bounds = [ [-100 for i in range(10)], [100 for i in range(10)] ] # 10-dimensional sphere (optimum: 0)
 
-    func = cec2005.F2(10)
+    func = cec2005.F1(10)
     start = time.time()
 
     # Initialization
