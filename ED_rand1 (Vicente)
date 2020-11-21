@@ -13,7 +13,7 @@ global best_par
 global gen_id
 global num_iter
 
-###Valores usados 
+###Valores usado: CR = 0.5, F= 0.5, NP = 50
 
 
 min_values = [-100,-100,-100,-100,-100,-100,-100,-100,-100,-100]
